@@ -17,12 +17,12 @@ matrix:
 ;%macro ASCENDING 0
 ;	%define	DIRECTION 1
 ;%endmacro
-
+;
 ;%macro DESCENDING 0
 ;	%define DIRECTION -1
 ;%endmacro
 
-;%define ASCENDING
+%define ASCENDING	;This used for reverse sort
 
 section .text
 global _start
@@ -102,8 +102,7 @@ _sort_loop:
 		cmp	edi, esi
 	%endif
 	
-
-
+	
 	jng 	_inc_sort_counter
 
 	mov	[r8+rsp], edi
