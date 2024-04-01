@@ -8,7 +8,11 @@ str:
 	times size	db	0
 
 section .bss
-fd	resq 1
+fd		resq 1
+buffer		resb 1
+prev_char	resb 1
+skip_char	resb 1 
+
 
 section .text
 global _start
@@ -32,31 +36,72 @@ _start:
 
 
 	or	rax, rax
-	jl	_error
+	jl	_exit
+
+;_read_loop:
+;	mov	rax, 0
+;	mov	rdi, [fd]
+;	mov	rsi, str
+;	mov	rdx, size
+;	syscall
+;
+;	mov	r11, rax
+;
+;	test 	rax, rax
+;	jle	_close_file
+;
+;	mov	rsi, str
+;	mov	rdx, r11
+;	syscall	
+;
+;	jmp _read_loop
+;
+;_error:
+;	mov	rax, 60
+;	mov	rdi, 1
+;	syscall
+
+;_close_file:
+;	mov	rax, 60
+;	xor 	rdi, rdi
+;	syscall
+	
+	mov	byte[prev_char], 0
+	mov	byte[buffer], 0
 
 _read_loop:
 	mov	rax, 0
 	mov	rdi, [fd]
-	mov	rsi, str
-	mov	rdx, size
+	mov	rsi, buffer
+	mov	rdx, 1
 	syscall
 
-	mov	r11, rax
+	test	rax, rax
+	jle	_exit_and_close
 
-	test 	rax, rax
-	jle	_close_file
+	mov	al, byte[buffer]
+	mov	byte[skip_char], 0
 
-	mov 	rax, 1
+	cmp	al, byte[prev_char]
+	je 	_set_skip_flag
+
+	mov	byte[prev_char], al
+
+	mov	rax, 1
 	mov	rdi, 1
-	mov	rsi, str
-	mov	rdx, r11
+	mov	rsi, buffer
+	mov	rdx, 1
 	syscall
 
-	jmp _read_loop
+_set_skip_flag:
+	mov	byte[skip_char], 1
+	jmp	_read_loop
 
-_close_file:
+_exit_and_close:
+	mov	rax, 3
+	mov	rdi, [fd]
+	syscall
+_exit:
 	mov	rax, 60
-_error:
-	mov	rdi, 1
 	xor 	rdi, rdi
 	syscall
