@@ -6,6 +6,13 @@ filename:
 	times size	db	0
 str:
 	times size	db	0
+enter_message:
+	db	"Enter name of file with data:", 10
+ent_len equ	$-enter_message
+error_message:
+	db	"Error with file opening!", 10
+error_len equ	$-error_message
+
 
 section .bss
 fd		resq 1
@@ -18,11 +25,20 @@ section .text
 global _start
 
 _start:
+	mov	rax, 1
+	mov	rdi, 1
+	mov	rsi, enter_message
+	mov	rdx, ent_len
+	syscall
+	
 	mov	rax, 0
 	mov	rdi, 0
 	mov	rsi, filename
 	mov	rdx, size
 	syscall
+	
+	or	rax, rax
+	je	_end
 
 	dec	rax
 	mov	r10, rax
@@ -38,36 +54,10 @@ _start:
 	or	rax, rax
 	jl	_exit
 
-;_read_loop:
-;	mov	rax, 0
-;	mov	rdi, [fd]
-;	mov	rsi, str
-;	mov	rdx, size
-;	syscall
-;
-;	mov	r11, rax
-;
-;	test 	rax, rax
-;	jle	_close_file
-;
-;	mov	rsi, str
-;	mov	rdx, r11
-;	syscall	
-;
-;	jmp _read_loop
-;
-;_error:
-;	mov	rax, 60
-;	mov	rdi, 1
-;	syscall
-
-;_close_file:
-;	mov	rax, 60
-;	xor 	rdi, rdi
-;	syscall
-	
 	mov	byte[prev_char], 0
 	mov	byte[buffer], 0
+	
+
 
 _read_loop:
 	mov	rax, 0
@@ -78,6 +68,7 @@ _read_loop:
 
 	test	rax, rax
 	jle	_exit_and_close
+	
 
 	mov	al, byte[buffer]
 	mov	byte[skip_char], 0
@@ -101,7 +92,17 @@ _exit_and_close:
 	mov	rax, 3
 	mov	rdi, [fd]
 	syscall
+	jmp 	_start
+
 _exit:
+	mov	rax, 1
+	mov	rdi, 1
+	mov	rsi, error_message
+	mov	rdx, error_len
+	syscall
+	jmp 	_start
+
+_end:
 	mov	rax, 60
-	xor 	rdi, rdi
+	xor	rdi, rdi
 	syscall
