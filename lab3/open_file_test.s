@@ -58,6 +58,8 @@ _start:
 	mov	byte[buffer], 0
 	
 
+	
+	xor	r15, r15
 
 _read_loop:
 	mov	rax, 0
@@ -66,6 +68,11 @@ _read_loop:
 	mov	rdx, 1
 	syscall
 
+	cmp 	byte[buffer], 9
+	jne	_further1
+	mov	byte[buffer], 32
+
+_further1:
 	test	rax, rax
 	jle	_exit_and_close
 	
@@ -78,6 +85,21 @@ _read_loop:
 
 	mov	byte[prev_char], al
 
+	inc	r15
+
+	cmp	byte[buffer], 10
+	jne	_further2
+	xor	r15, r15
+
+_further2:
+
+	cmp	r15, 1
+	jne	_further3
+	cmp	byte[buffer], 32
+	jne	_further3
+	je	_set_skip_flag
+
+_further3:
 	mov	rax, 1
 	mov	rdi, 1
 	mov	rsi, buffer
