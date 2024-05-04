@@ -12,7 +12,7 @@ LIBS = -lgcc -lgcc_eh -lc -lm
 PREOBJ = $(OBJPATH)/crt1.o $(OBJPATH)/crti.o
 POSTOBJ = $(OBJPATH)/crtn.o
 
-SRCS = lab.s
+SRCS = labn.s
 OBJS = $(SRCS:.s=.o)
 
 EXE = lab
